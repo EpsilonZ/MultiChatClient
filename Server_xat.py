@@ -6,11 +6,14 @@ import select
 import string
 
 	
-def envia (sock, message, usr): #Enviamos el mensaje recibido por el mensaje a todos los clientes conectados (menos al que lo ha enviado) y lo imprimos por pantalla(la del Servidor incluida)
-    for socket in CLIST:
-        if socket != server_socket and socket != sock:
-            print 'Mensaje recibido: ', message
-            socket.send(message)
+def envia (sock, message, usr,indexEmisor): # TODO: Haciendo esta parte del codigo
+    nomCanal = usuarisCanal[indexEmisor-1]
+    i = 0
+    for j in usuarisCanal:
+		  if j == nomCanal and CLIST[i+1]!=sock :
+		      socketReceptor = CLIST[i+1]
+		      socketReceptor.send(message)
+		  i = i + 1    
 						
 def envia_privat(nomUsuari):
     # Si quiere enviar un mensaje privado a alguien
@@ -161,6 +164,6 @@ if __name__ == "__main__":
 												    sock.send("Has creado el canal: " + nomCanal)																								
                     else:
                         missatge = nomUsuari + ": " + data
-                        envia(sock,missatge,addr)                    
+                        envia(sock,missatge,addr,indiceNomUsuari[0])                    
                 
     server_socket.close()    
