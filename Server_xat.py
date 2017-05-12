@@ -3,16 +3,16 @@ import sys
 import socket
 import threading
 import select
-import string
+#import string
 
 	
-def envia (sock, message, usr,indexEmisor): # TODO: Haciendo esta parte del codigo
+def envia (socket, nomUsuari ,indexEmisor, data): # TODO: Haciendo esta parte del codigo
     nomCanal = usuarisCanal[indexEmisor-1]
     i = 0
     for j in usuarisCanal:
-		  if j == nomCanal and CLIST[i+1]!=sock :
+		  if j == nomCanal and CLIST[i+1]!=socket :
 		      socketReceptor = CLIST[i+1]
-		      socketReceptor.send(message)
+		      socketReceptor.send("Mensaje de " + nomUsuari + " : " + data)
 		  i = i + 1    
 						
 def envia_privat(nomUsuari):
@@ -48,7 +48,7 @@ if __name__ == "__main__":
     print 'Server TCP'
 
     server_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM) #creamos socket
-    server_socket.bind(('localhost', 6666)) # le damos la ip y el puerto
+    server_socket.bind(('', 6666)) # le damos la ip y el puerto
     server_socket.listen(10) # el numero de clientes que como maximo se conecten
  
     CLIST.append(server_socket) # anadimos a la lista el server_socket
@@ -89,8 +89,14 @@ if __name__ == "__main__":
 
                 if data:
 										#TODO -> Comando privat error
-                    indiceNomUsuari = [item for item in range(len(CLIST)) if CLIST[item] == sock ]	
-                    nomUsuari = usuarisTotal[indiceNomUsuari[0]-1]
+                    indiceNomUsuari = 0
+                    flag = False
+                    while flag == False:
+                        if(sock == CLIST[indiceNomUsuari]):
+                            flag = True
+                        else: 
+                            indiceNomUsuari = indiceNomUsuari + 1
+                    nomUsuari = usuarisTotal[indiceNomUsuari-1]
 										 #Si el cliente quiere salirse                             
                     if data == "q" or data == "Q":     
                         print "Client (%s, %s) quit" % addr
@@ -104,14 +110,14 @@ if __name__ == "__main__":
 												envia_privat(nomUsuari)
                     elif data == "MOSTRA CANALS":		
 												# Si quiere la lista de todos los canales
-                        print "Los canales son: "
+                        sock.send( "Los canales son: " )
                         for i in canalLista:
 														sock.send(i)
 														sock.send(" ") 
                     elif data == "MOSTRA USUARIS":	
 												print "Comanda para enseñar los usuarios del canal actual"
 												# Si quiere la lista de usuarios del canal actual
-												nomCanal = usuarisCanal[indiceNomUsuari[0]-1]
+												nomCanal = usuarisCanal[indiceNomUsuari-1]
 												i = 0
 												for j in usuarisCanal:
 													if j == nomCanal:
@@ -139,9 +145,9 @@ if __name__ == "__main__":
 												if not nomCanal in canalLista:
 													sock.send("El nombre del canal no existe, no puede realizarse el cambio") 
 												else :
-													print usuarisTotal[indiceNomUsuari[0]-1]
+													print usuarisTotal[indiceNomUsuari-1]
 													print nomCanal										    		
-													usuarisCanal[indiceNomUsuari[0]-1] = nomCanal
+													usuarisCanal[indiceNomUsuari-1] = nomCanal
 													sock.send("Ahora te encuentras en el canal: " + nomCanal )
                     elif data == "CREA":
 												# Si quiere crear un canal
@@ -163,7 +169,6 @@ if __name__ == "__main__":
 												    	i = i + 1							                                         	
 												    sock.send("Has creado el canal: " + nomCanal)																								
                     else:
-                        missatge = nomUsuari + ": " + data
-                        envia(sock,missatge,addr,indiceNomUsuari[0])                    
+                        envia(sock,nomUsuari,indiceNomUsuari,data)                    
                 
     server_socket.close()    
